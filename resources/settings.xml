@@ -18,4 +18,8 @@
         <setting label="32011" type="bool" id="recentitems_unplayed" subsetting="true" default="true" enable="eq(-1,true)"/>
         <setting label="32010" type="bool" id="recentitems_homeupdate" default="false"/>
     </category>
+    <category label="32015">
+        <setting label="32015" type="bool" id="recentaireditems_enable" default="true"/>
+        <setting label="32011" type="bool" id="recentaireditems_unplayed" subsetting="true" default="true" enable="eq(-1,true)"/>
+    </category>
 </settings>

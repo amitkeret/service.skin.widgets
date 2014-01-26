@@ -67,6 +67,7 @@ class Main:
             self._fetch_info_randomitems()
             self._fetch_info_recommended()
             self._fetch_info_recentitems()
+            self._fetch_info_recentaireditems()
             b_total = datetime.datetime.now()
             c_total = b_total - a_total
             log('Total time needed for all queries: %s' % c_total)
@@ -81,7 +82,7 @@ class Main:
         self.LIMIT = 20
 
     def _on_change(self):
-        clearlist_groups = ['Recommended','Random','Recent']
+        clearlist_groups = ['Recommended','Random','Recent','RecentAired']
         clearlist_types = ['Movie','Episode','MusicVideo','Album', 'Artist','Song','Addon']
         for item_group in clearlist_groups:
             for item_type in clearlist_types:
@@ -91,11 +92,13 @@ class Main:
         self._fetch_info_randomitems()
         self._fetch_info_recommended()
         self._fetch_info_recentitems()
+        self._fetch_info_recentaireditems()
 
     def _init_property(self):
         self.WINDOW.setProperty('SkinWidgets_Recommended', '%s' % __addon__.getSetting("recommended_enable"))
         self.WINDOW.setProperty('SkinWidgets_RandomItems', '%s' % __addon__.getSetting("randomitems_enable"))
         self.WINDOW.setProperty('SkinWidgets_RecentItems', '%s' % __addon__.getSetting("recentitems_enable"))
+        self.WINDOW.setProperty('SkinWidgets_RecentAiredItems', '%s' % __addon__.getSetting("recentaireditems_enable"))
         self.WINDOW.setProperty('SkinWidgets_RandomItems_Update', 'false')
         self.RANDOMITEMS_UPDATE_METHOD = int(__addon__.getSetting("randomitems_method"))
         self.RECENTITEMS_HOME_UPDATE = __addon__.getSetting("recentitems_homeupdate")
@@ -159,6 +162,18 @@ class Main:
             b = datetime.datetime.now()
             c = b - a
             log('Total time needed to request recent items queries: %s' % c)
+    
+    def _fetch_info_recentaireditems(self):
+        a = datetime.datetime.now()
+        if __addon__.getSetting("recentaireditems_enable") == 'true':
+            self.RECENTAIREDITEMS_UNPLAYED = __addon__.getSetting("recentaireditems_unplayed") == 'true'
+            self._fetch_movies('RecentAiredMovie')
+            self._fetch_tvshows('RecentAiredEpisode')
+            self._fetch_musicvideo('RecentAiredMusicVideo')
+            self._fetch_albums('RecentAiredAlbum')
+            b = datetime.datetime.now()
+            c = b - a
+            log('Total time needed to request recent items queries: %s' % c)
             
     def _fetch_movies(self, request):
         if not xbmc.abortRequested:
@@ -169,6 +184,10 @@ class Main:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "dateadded"}, "filter": {"field": "playcount", "operator": "is", "value": "0"}}}' %json_string)
             elif request == 'RecentMovie':
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "dateadded"}}}' %json_string)
+            elif request == 'RecentAiredMovie' and self.RECENTAIREDITEMS_UNPLAYED:
+                json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "year"}, "filter": {"field": "playcount", "operator": "is", "value": "0"}}}' %json_string)
+            elif request == 'RecentAiredMovie':
+                json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "year"}}}' %json_string)
             elif request == "RandomMovie" and self.RANDOMITEMS_UNPLAYED:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"method": "random" }, "filter": {"field": "playcount", "operator": "lessthan", "value": "1"}}}' %json_string)
             else:
@@ -319,6 +338,10 @@ class Main:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "dateadded"}, "filter": {"field": "playcount", "operator": "lessthan", "value": "1"}}}' %json_string)
             elif request == 'RecentEpisode':
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "dateadded"}}}' %json_string)
+            elif request == 'RecentAiredEpisode' and self.RECENTAIREDITEMS_UNPLAYED:
+                json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "year"}, "filter": {"field": "playcount", "operator": "lessthan", "value": "1"}}}' %json_string)
+            elif request == 'RecentAiredEpisode':
+                json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "year"}}}' %json_string)
             elif request == 'RandomEpisode' and self.RANDOMITEMS_UNPLAYED:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"method": "random" }, "filter": {"field": "playcount", "operator": "lessthan", "value": "1"}}}' %json_string)
             else:
@@ -416,6 +439,8 @@ class Main:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "playcount" }}}'  %json_string)
             elif request == 'RecentMusicVideo':
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "dateadded"}}}'  %json_string)
+            elif request == 'RecentAiredMusicVideo':
+                json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "year"}}}'  %json_string)
             else:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"method": "random"}}}' %json_string)
             json_query = unicode(json_query, 'utf-8', errors='ignore')
@@ -470,6 +495,8 @@ class Main:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "playcount" }}}' %json_string)
             elif request == 'RecentAlbum':
                 json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "dateadded" }}}' %json_string)
+            elif request == 'RecentAiredAlbum':
+                json_query = xbmc.executeJSONRPC('%s "sort": {"order": "descending", "method": "year" }}}' %json_string)
             else:
                 json_query = xbmc.executeJSONRPC('%s "sort": {"method": "random"}}}' %json_string)
             json_query = unicode(json_query, 'utf-8', errors='ignore')
@@ -627,19 +654,25 @@ class Main:
         if type == 'movie':
             self._fetch_movies('RecommendedMovie')
             self._fetch_movies('RecentMovie')
+            self._fetch_movies('RecentAiredMovie')
         elif type == 'episode':
             self._fetch_tvshows_recommended('RecommendedEpisode')
             self._fetch_tvshows('RecentEpisode')
+            self._fetch_tvshows('RecentAiredEpisode')
         elif type == 'video':
             #only on db update
             self._fetch_movies('RecommendedMovie')
             self._fetch_tvshows_recommended('RecommendedEpisode')
             self._fetch_movies('RecentMovie')
+            self._fetch_movies('RecentAiredMovie')
             self._fetch_tvshows('RecentEpisode')
+            self._fetch_tvshows('RecentAiredEpisode')
             self._fetch_musicvideo('RecentMusicVideo')
+            self._fetch_musicvideo('RecentAiredMusicVideo')
         elif type == 'music':
             self._fetch_albums('RecommendedAlbum')
             self._fetch_albums('RecentAlbum')
+            self._fetch_albums('RecentAiredAlbum')
         if self.RANDOMITEMS_UPDATE_METHOD == 1:
             # update random if db update is selected instead of timer
             if type == 'video':

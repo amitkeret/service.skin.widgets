@@ -69,3 +69,7 @@ msgstr ""
 msgctxt "#32014"
 msgid "* Hidden to prevent spoilers *"
 msgstr ""
+
+msgctxt "#32015"
+msgid "Recently aired Items"
+msgstr ""
